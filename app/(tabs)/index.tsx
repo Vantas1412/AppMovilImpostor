@@ -21,6 +21,14 @@ const initialPlayers = [
   { id: 2, name: 'Jugador 2', role: null },
   { id: 3, name: 'Jugador 3', role: null },
 ];
+function shuffle<T>(array: T[]): T[] {
+  const result = [...array]; // copiamos para no mutar el original
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('menu');
@@ -159,7 +167,7 @@ export default function App() {
       case 'reveal':
         return (
           <WordRevealScreen
-            players={players}
+            players={shuffle(players)}
             selectedPacks={selectedPacks}
             hintsForImpostor={hintsForImpostor}
             onFinish={handleRevealFinish}

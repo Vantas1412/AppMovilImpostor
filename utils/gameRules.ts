@@ -3,7 +3,7 @@ export const canRemovePlayer = (totalPlayers: number, impostorCount: number): bo
   if (totalPlayers <= 3) return false;
   
   // Verificar mayoría de civiles
-  const civiliansAfterRemoval = totalPlayers - 1 - impostorCount;
+  const civiliansAfterRemoval = totalPlayers  - impostorCount;
   return civiliansAfterRemoval > impostorCount * 2;
 };
 
