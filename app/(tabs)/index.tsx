@@ -1,35 +1,54 @@
-import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import React, { useState } from 'react';
+import { Alert, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Hooks personalizados
-import { usePlayers } from '../../hooks/usePlayers';
 import { useGameConfig } from '../../hooks/useGameConfig';
+import { usePlayers } from '../../hooks/usePlayers';
 
 // Pantallas
 import MainMenuScreen from '../../screens/MainMenuScreen';
-import PlayersScreen from '../../screens/PlayersScreen';
 import PackagesScreen from '../../screens/PackagesScreen';
+import PlayersScreen from '../../screens/PlayersScreen';
+import WordRevealScreen from '../../screens/WordRevealScreen';
 
 // Tipos
 import { ScreenType } from '../../types';
 
 const initialPlayers = [
-  { id: 1, name: 'Jugador 1' },
-  { id: 2, name: 'Jugador 2' },
-  { id: 3, name: 'Jugador 3' },
+  { id: 1, name: 'Jugador 1', role: null },
+  { id: 2, name: 'Jugador 2', role: null },
+  { id: 3, name: 'Jugador 3', role: null },
 ];
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('menu');
+  const [hintsForImpostor, setHintsForImpostor] = useState(false);
   
   // Hooks personalizados
+  const [selectedPacks, setSelectedPacks] = useState<{ [key: string]: boolean }>({
+    cantantes: false,
+    actores: false,
+    naturaleza: true,
+    animales: true,
+    cine: true,
+    salud: false,
+    deportes: false,
+    escuela: false,
+    fantasia: false,
+    juegos: false,
+    personajes: false,
+    trabajos: false,
+  });
+
   const {
     players,
     addPlayer,
     removePlayer,
     updatePlayerName,
+    assignPlayerRoles,
+    resetPlayerRoles,
     playersCount,
   } = usePlayers(initialPlayers);
 
@@ -51,8 +70,51 @@ export default function App() {
     removePlayer(id, impostorCount);
   };
 
+  const handleToggleHints = () => {
+    setHintsForImpostor(!hintsForImpostor);
+  };
+
   const handleStartGame = () => {
-    Alert.alert("¡A jugar!", `Configuración:\nJugadores: ${playersCount}\nImpostores: ${impostorCount}\nDuración: ${duration} min`);
+    // Validar que haya al menos un paquete seleccionado
+    const hasSelectedPacks = Object.values(selectedPacks).some(selected => selected);
+    
+    if (!hasSelectedPacks) {
+      Alert.alert(
+        "Sin paquetes",
+        "Por favor selecciona al menos un paquete de palabras antes de iniciar."
+      );
+      return;
+    }
+
+    // Asignar roles a los jugadores
+    assignPlayerRoles(impostorCount);
+    
+    // Ir a la pantalla de revelación
+    setCurrentScreen('reveal');
+  };
+
+  const handleRevealFinish = () => {
+    // Aquí puedes ir a la pantalla del juego principal
+    Alert.alert(
+      '¡Juego iniciado!',
+      'Todos conocen sus palabras. ¡Que comience el juego!',
+      [
+        {
+          text: 'OK',
+          onPress: () => {
+            // Por ahora volvemos al menú
+            // Luego puedes cambiar esto a: setCurrentScreen('game');
+            console.log('Iniciando juego...');
+            setCurrentScreen('menu');
+          }
+        }
+      ]
+    );
+  };
+
+  const handleBackToMenu = () => {
+    resetPlayerRoles();
+    setCurrentScreen('menu');
   };
 
   // Renderizado condicional
@@ -64,11 +126,13 @@ export default function App() {
             players={players}
             impostorCount={impostorCount}
             duration={duration}
+            hintsForImpostor={hintsForImpostor}
             onPlayersPress={() => setCurrentScreen('jugadores')}
             onPackagesPress={() => setCurrentScreen('paquetes')}
             onStartGame={handleStartGame}
             onIncrementDuration={incrementDuration}
             onDecrementDuration={decrementDuration}
+            onToggleHints={handleToggleHints}
           />
         );
       case 'jugadores':
@@ -86,8 +150,20 @@ export default function App() {
         );
       case 'paquetes':
         return (
-          <PackagesScreen
-            onBack={() => setCurrentScreen('menu')}
+          <PackagesScreen 
+            onBack={() => setCurrentScreen('menu')} 
+            selectedPacks={selectedPacks}
+            setSelectedPacks={setSelectedPacks}
+          />
+        );
+      case 'reveal':
+        return (
+          <WordRevealScreen
+            players={players}
+            selectedPacks={selectedPacks}
+            hintsForImpostor={hintsForImpostor}
+            onFinish={handleRevealFinish}
+            onBack={handleBackToMenu}
           />
         );
       default:

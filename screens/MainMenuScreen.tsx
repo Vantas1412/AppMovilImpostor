@@ -1,29 +1,34 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Card, Title, List, Button } from 'react-native-paper';
-import { Player } from '../types';
+import { StyleSheet } from 'react-native';
+import { Button, Card, List, Title } from 'react-native-paper';
+import HintsControl from '../components/HintsControl';
 import TimeControls from '../components/TimeControls';
+import { Player } from '../types';
 
 interface MainMenuScreenProps {
   players: Player[];
   impostorCount: number;
   duration: number;
+  hintsForImpostor: boolean;
   onPlayersPress: () => void;
   onPackagesPress: () => void;
   onStartGame: () => void;
   onIncrementDuration: () => void;
   onDecrementDuration: () => void;
+  onToggleHints: () => void;
 }
 
 const MainMenuScreen: React.FC<MainMenuScreenProps> = ({
   players,
   impostorCount,
   duration,
+  hintsForImpostor,
   onPlayersPress,
   onPackagesPress,
   onStartGame,
   onIncrementDuration,
   onDecrementDuration,
+  onToggleHints,
 }) => {
   const civiliansCount = players.length - impostorCount;
 
@@ -53,6 +58,11 @@ const MainMenuScreen: React.FC<MainMenuScreenProps> = ({
           onDecrement={onDecrementDuration}
         />
         
+        <HintsControl
+          hintsForImpostor={hintsForImpostor}
+          onToggle={onToggleHints}
+        />
+        
         <Button 
           mode="contained" 
           style={styles.startButton} 
@@ -65,7 +75,6 @@ const MainMenuScreen: React.FC<MainMenuScreenProps> = ({
   );
 };
 
-// En /src/screens/MainMenuScreen.tsx - Estilos actualizados
 const styles = StyleSheet.create({
   card: {
     borderRadius: 20,

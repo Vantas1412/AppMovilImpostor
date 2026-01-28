@@ -1,7 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
 import { Player } from '../types';
-import { canAddImpostor, canRemovePlayer } from '../utils/gameRules';
+import { canRemovePlayer } from '../utils/gameRules';
+import { assignRoles, resetRoles } from '../utils/gameUtils';
 
 export const usePlayers = (initialPlayers: Player[] = []) => {
   const [players, setPlayers] = useState<Player[]>(initialPlayers);
@@ -12,7 +13,8 @@ export const usePlayers = (initialPlayers: Player[] = []) => {
       : 1;
     setPlayers(prev => [...prev, { 
       id: newId, 
-      name: `Jugador ${newId}` 
+      name: `Jugador ${newId}`,
+      role: null
     }]);
   }, [players]);
 
@@ -34,12 +36,32 @@ export const usePlayers = (initialPlayers: Player[] = []) => {
     );
   }, []);
 
+  // Nueva función para asignar roles
+  const assignPlayerRoles = useCallback((impostorCount: number) => {
+    try {
+      const playersWithRoles = assignRoles(players, impostorCount);
+      setPlayers(playersWithRoles);
+      return playersWithRoles;
+    } catch (error) {
+      Alert.alert('Error', 'No se pudieron asignar los roles correctamente');
+      return players;
+    }
+  }, [players]);
+
+  // Nueva función para reiniciar roles
+  const resetPlayerRoles = useCallback(() => {
+    const playersWithoutRoles = resetRoles(players);
+    setPlayers(playersWithoutRoles);
+  }, [players]);
+
   return {
     players,
     setPlayers,
     addPlayer,
     removePlayer,
     updatePlayerName,
+    assignPlayerRoles,
+    resetPlayerRoles,
     playersCount: players.length
   };
 };

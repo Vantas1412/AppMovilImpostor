@@ -1,19 +1,19 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Card, Title, Button, List, Switch, Divider, Text } from 'react-native-paper';
+import React from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Button, Card, Divider, List, Switch, Text, Title } from 'react-native-paper';
 
 interface PackagesScreenProps {
   onBack: () => void;
+  selectedPacks: { [key: string]: boolean };
+  setSelectedPacks: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
 }
 
-const PackagesScreen: React.FC<PackagesScreenProps> = ({ onBack }) => {
-  // Estado para controlar qué paquetes están seleccionados
-  const [selectedPacks, setSelectedPacks] = useState<{ [key: string]: boolean }>({
-    animales: true,
-    naturaleza: true,
-    cine: true,
-  });
 
+const PackagesScreen: React.FC<PackagesScreenProps> = ({ 
+  onBack, 
+  selectedPacks, 
+  setSelectedPacks 
+}) => {
   const togglePack = (id: string) => {
     setSelectedPacks((prev) => ({
       ...prev,
