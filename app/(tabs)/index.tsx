@@ -8,9 +8,12 @@ import { useGameConfig } from '../../hooks/useGameConfig';
 import { usePlayers } from '../../hooks/usePlayers';
 
 // Pantallas
+import GameResultsScreen from '../../screens/Gameresultsscreen';
+import GameScreen from '../../screens/GameScreen';
 import MainMenuScreen from '../../screens/MainMenuScreen';
 import PackagesScreen from '../../screens/PackagesScreen';
 import PlayersScreen from '../../screens/PlayersScreen';
+import VotingScreen from '../../screens/Votingscreen';
 import WordRevealScreen from '../../screens/WordRevealScreen';
 
 // Tipos
@@ -21,6 +24,7 @@ const initialPlayers = [
   { id: 2, name: 'Jugador 2', role: null },
   { id: 3, name: 'Jugador 3', role: null },
 ];
+
 function shuffle<T>(array: T[]): T[] {
   const result = [...array]; // copiamos para no mutar el original
   for (let i = result.length - 1; i > 0; i--) {
@@ -33,6 +37,9 @@ function shuffle<T>(array: T[]): T[] {
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('menu');
   const [hintsForImpostor, setHintsForImpostor] = useState(false);
+  const [gameResult, setGameResult] = useState<'impostors' | 'civils' | null>(null);
+  const [currentWord, setCurrentWord] = useState<string>('');
+  const [currentHint, setCurrentHint] = useState<string>('');
   
   // Hooks personalizados
   const [selectedPacks, setSelectedPacks] = useState<{ [key: string]: boolean }>({
@@ -101,23 +108,40 @@ export default function App() {
     setCurrentScreen('reveal');
   };
 
-  const handleRevealFinish = () => {
-    // Aquí puedes ir a la pantalla del juego principal
+  const handleRevealFinish = (word: string, hint: string) => {
+    // Guardar palabra y pista del juego
+    setCurrentWord(word);
+    setCurrentHint(hint);
+    // Ir a la pantalla del juego principal
+    setCurrentScreen('game');
+  };
+
+  const handleTimeUp = () => {
     Alert.alert(
-      '¡Juego iniciado!',
-      'Todos conocen sus palabras. ¡Que comience el juego!',
+      '⏰ ¡Se acabó el tiempo!',
+      'Es hora de votar. ¿Quién creen que es el impostor?',
       [
         {
-          text: 'OK',
-          onPress: () => {
-            // Por ahora volvemos al menú
-            // Luego puedes cambiar esto a: setCurrentScreen('game');
-            console.log('Iniciando juego...');
-            setCurrentScreen('menu');
-          }
+          text: 'Iniciar votación',
+          onPress: () => setCurrentScreen('voting'),
         }
       ]
     );
+  };
+
+  const handleStartVoting = () => {
+    setCurrentScreen('voting');
+  };
+
+  const handleGameEnd = (result: 'impostors' | 'civils') => {
+    setGameResult(result);
+    setCurrentScreen('results');
+  };
+
+  const handlePlayAgain = () => {
+    resetPlayerRoles();
+    setGameResult(null);
+    setCurrentScreen('reveal'); // Volver a la revelación para nuevo juego
   };
 
   const handleBackToMenu = () => {
@@ -172,6 +196,42 @@ export default function App() {
             hintsForImpostor={hintsForImpostor}
             onFinish={handleRevealFinish}
             onBack={handleBackToMenu}
+          />
+        );
+      case 'game':
+        return (
+          <GameScreen
+            duration={duration}
+            onTimeUp={handleTimeUp}
+            onBack={handleBackToMenu}
+            onStartVoting={handleStartVoting}
+            players={players}
+            selectedPacks={selectedPacks}
+            hintsForImpostor={hintsForImpostor}
+          />
+        );
+      case 'voting':
+        return (
+          <VotingScreen
+            players={players}
+            impostorCount={impostorCount}
+            word={currentWord}
+            hint={currentHint}
+            hintsForImpostor={hintsForImpostor}
+            onGameEnd={handleGameEnd}
+            onBack={handleBackToMenu}
+          />
+        );
+      case 'results':
+        return (
+          <GameResultsScreen
+            result={gameResult || 'civils'}
+            players={players}
+            word={currentWord}
+            hint={currentHint}
+            hintsForImpostor={hintsForImpostor}
+            onBackToMenu={handleBackToMenu}
+            onPlayAgain={handlePlayAgain}
           />
         );
       default:

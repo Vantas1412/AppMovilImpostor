@@ -3,7 +3,7 @@ export type PlayerRole = 'impostor' | 'civil' | null;
 export interface Player {
   id: number;
   name: string;
-  role?: PlayerRole; // Rol asignado durante el juego
+  role: 'impostor' | 'civil' | null;
 }
 
 export interface GameConfig {
@@ -13,7 +13,7 @@ export interface GameConfig {
   hintsForImpostor: boolean;
 }
 
-export type ScreenType = 'menu' | 'jugadores' | 'paquetes' | 'game' | 'reveal';
+export type ScreenType = 'menu' | 'jugadores' | 'paquetes' | 'reveal' | 'game' | 'voting' | 'results';
 
 export interface PlayerControlsProps {
   players: Player[];

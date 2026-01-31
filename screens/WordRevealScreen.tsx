@@ -2,14 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import { ActivityIndicator } from 'react-native-paper';
 import RevealScreen from '../components/RevealScreen';
-import { Word, getRandomWord, processWordForPlayer } from '../data/words';
+import { Word } from '../data/package';
+import { getRandomWord, processWordForPlayer } from '../data/words';
 import { Player } from '../types';
 
 interface WordRevealScreenProps {
   players: Player[];
   selectedPacks: { [key: string]: boolean };
   hintsForImpostor: boolean;
-  onFinish: () => void;
+  onFinish: (word: string, hint: string) => void;
   onBack: () => void;
 }
 
@@ -55,13 +56,27 @@ const WordRevealScreen: React.FC<WordRevealScreenProps> = ({
   };
 
   const handleFinish = () => {
+    if (!selectedWord) return;
+
+    // Extraer la palabra principal (para civiles)
+    // La palabra original está en selectedWord.word
+    const mainWord = selectedWord.word || '';
+    
+    // Obtener la pista para impostores
+    let hint = '';
+    if (hintsForImpostor && selectedWord.hints && selectedWord.hints.length > 0) {
+      // Usar una pista aleatoria del array de pistas
+      const randomIndex = Math.floor(Math.random() * selectedWord.hints.length);
+      hint = selectedWord.hints[randomIndex];
+    }
+
     Alert.alert(
       '¡Todos listos!',
       'Todos los jugadores han visto sus palabras. ¿Listo para comenzar?',
       [
         {
           text: 'Comenzar',
-          onPress: onFinish,
+          onPress: () => onFinish(mainWord, hint),
         },
       ]
     );
